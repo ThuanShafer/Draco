@@ -4,10 +4,7 @@ angular.module('starter.controllers', [])
 .controller('DashCtrl', function($scope) {})
 
 .controller('ChatsCtrl', function($scope, $ionicHistory, Chats) {
-    
-  var destination = '';
-  //var client;
-  
+
   // With the new view caching in Ionic, Controllers are only called
   // when they are recreated or on app start, instead of every page change.
   // To listen for when this page is active (for example, to refresh data),
@@ -15,7 +12,7 @@ angular.module('starter.controllers', [])
   //
   //$scope.$on('$ionicView.enter', function(e) {
   //});
-    
+
   $scope.chats = Chats.all();
   $scope.remove = function(chat) {
     Chats.remove(chat);
@@ -24,10 +21,10 @@ angular.module('starter.controllers', [])
 
   //Initiating the ActiveMQ server connection
   $scope.initiate = function() {
-    //var url = "ws://localhost:61614";
     var url = "ws://localhost:61614";
     var username = "admin";
     var passcode = "password";
+    var destination = "/topic/chat.thuan";
 
     client = Stomp.client(url);
     var headers = {
@@ -45,50 +42,37 @@ angular.module('starter.controllers', [])
     function constructSessionID(id) {
       return id.replace(/:|-/g, '');
     }
-  
-      
-    client.connect(headers, function(frame) {
-    
-    /*var producers = ["thuan"];*/   
+
+
+    client.connect(destination, function(frame) {
     var path = constructSessionID(frame.headers.session + "");
      
-    client.subscribe("/topic/chat.*", function(message) {
-    var sendID = message.headers.destination;
-        destination = destination + sendID;
-        console.log("------------------------------" + destination);
-        console.log("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&" + sendID);
-        
+    client.subscribe('/topic/chat.*', function(message) {
     console.debug(message);
     var msgID = constructSessionID(message.headers["message-id"] + "");
         
-/************************************************************************************************************************************************/
-/*          ``  var producerID = message.headers['message-id'];
-            producerID = producerID.split(":-");
-            producerID = producerID[0];
-            producerID = constructSessionID(producerID);
-            
-        
-            if(producers.indexOf(producerID) == -1){
-                producers.push(producerID);
-                
-                var newEntry = [{
-                        name: producerID,
-                        lastText: 'new one',
-                        face: 'img/max.png'
-                        }];
-                var finalObj = $scope.chats.concat(newEntry);
-                $scope.chats = finalObj;
-                console.log(producerID+ '   *************************** '+$scope.chats.length);
-            }*/
-  /************************************************************************************************************************************************/
-
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/*        if(producers.indexOf($rootScope.userName) == -1){
+           producers.push($rootScope.userName);
+                
+            if($rootScope.userName !=path)  { 
+                var newEntry = [{
+                    name: $rootScope.userName,
+                    lastText: 'new one',
+                    face: 'img/max.png',
+                     ddestination:message.headers["destination"]
+                    }];
+                       
+                    $scope.chats = $scope.chats.concat(newEntry);
+                    console.log($rootScope.userName + '   *************************** '+$scope.chats.length);
+                    }
+            }*/
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         
-
         if (msgID.indexOf(path) > -1) {
               
             var reply = message.body + ('<p> <font size="1" color="black">' + new Date().toLocaleString() + '</font></p>');
-            var des = message.headers["message-id"];
-            
+              
           $('<div class="msg_b"> <div class="profile-pic-right"><img src="https://cdn1.iconfinder.com/data/icons/user-pictures/101/malecostume-512.png"></div> <p style="color:black;">' + reply + '</p> </div>').insertBefore('.enter-msg');
 
         } else {
@@ -110,25 +94,34 @@ angular.module('starter.controllers', [])
     var text = $('#user_input').val();
 
     if (text != '') {
-      client.send(destination, {}, text); //destination
-      console.log("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^" + destination);
-        
+      client.send('/topic/chat.thuan', {}, text); //destination
+
       $('#user_input').val("");
     }
     // the client is notified when it is connected to the server.
-
+      
+   /* var fh = fopen("C:\\Users\\tsshiek\\Downloads\\AI_Bot\\data.txt", 3); // Open the file for writing
+      if(fh!=-1) // If the file has been successfully opened
+      {
+        var str = text;
+        fwrite(fh, str); // Write the string to a file
+        fclose(fh); // Close the file 
+      }*/
+      
     console.log("message submitted");
 }
   
+  
  
-//Disconnecting the ActiveMQ server connection  
-    $scope.disconnect = function() {
-        var exit = 'DIRROUTETOBOT';
-        client.send(destination, {}, exit);
-        
+  //Disconnecting the ActiveMQ server connection
+  $scope.disconnect = function() {
+    var exit = 'DIRROUTETOBOT';
+    client.send('/topic/chat.thuan', {}, exit);
+
+
     client.disconnect(function() {
       console.log("connection disconnected!");
-        
+
       $ionicHistory.goBack();
     })
   }

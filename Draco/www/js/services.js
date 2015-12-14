@@ -11,7 +11,7 @@ angular.module('starter.services', [])
     
   var chats = [{
     //id: 4,
-    name: 'Anonymous',
+    name: 'Pubudu Welagedara',
     lastText: 'This is wicked good ice cream.',
     face: 'https://s.yimg.com/wv/images/a9696dca20fc0835ff82d7e0c7fc3a91_96.png',
       
